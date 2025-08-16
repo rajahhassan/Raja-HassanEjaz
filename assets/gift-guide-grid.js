@@ -475,6 +475,9 @@ class GiftGuideGridComponent extends Component {
 
       this.closePopup();
       this.showSuccessMessage('Product added to cart!');
+      
+      // Show cart drawer after adding to cart
+      this.showCartDrawer();
     } catch (error) {
       console.error('Error adding to cart:', error);
       this.showErrorMessage('Failed to add product to cart');
@@ -745,6 +748,298 @@ class GiftGuideGridComponent extends Component {
         }
       }, 300);
     }, 5000);
+  }
+
+  /**
+   * Shows the cart drawer
+   */
+  async showCartDrawer() {
+    // Create cart drawer if it doesn't exist
+    if (!this.cartDrawer) {
+      this.createCartDrawer();
+    }
+
+    // Load cart data
+    await this.loadCartData();
+    
+    // Show the drawer
+    this.cartDrawer.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  /**
+   * Creates the cart drawer element
+   */
+  createCartDrawer() {
+    this.cartDrawer = document.createElement('div');
+    this.cartDrawer.className = 'gift-guide-cart-drawer';
+    this.cartDrawer.innerHTML = `
+      <div class="gift-guide-cart-drawer__overlay"></div>
+      <div class="gift-guide-cart-drawer__content">
+        <div class="gift-guide-cart-drawer__header">
+          <h3 class="gift-guide-cart-drawer__title">Shopping Cart</h3>
+          <button class="gift-guide-cart-drawer__close" aria-label="Close cart">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="gift-guide-cart-drawer__body">
+          <div class="gift-guide-cart-drawer__items"></div>
+          <div class="gift-guide-cart-drawer__empty" style="display: none;">
+            <p>Your cart is empty</p>
+          </div>
+        </div>
+        <div class="gift-guide-cart-drawer__footer">
+          <div class="gift-guide-cart-drawer__subtotal">
+            <span>Subtotal:</span>
+            <span class="gift-guide-cart-drawer__subtotal-amount">$0.00</span>
+          </div>
+          <button class="gift-guide-cart-drawer__checkout" disabled>
+            Checkout
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Add styles
+    this.cartDrawer.style.cssText = `
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10001;
+      display: none;
+    `;
+
+    // Add CSS for active state
+    const style = document.createElement('style');
+    style.textContent = `
+      .gift-guide-cart-drawer.active {
+        display: block !important;
+      }
+      .gift-guide-cart-drawer.active .gift-guide-cart-drawer__overlay {
+        opacity: 1 !important;
+      }
+      .gift-guide-cart-drawer.active .gift-guide-cart-drawer__content {
+        transform: translateX(0) !important;
+      }
+      .gift-guide-cart-drawer__close:hover {
+        background-color: #f0f0f0 !important;
+      }
+      .gift-guide-cart-drawer__checkout:hover {
+        background-color: #333 !important;
+      }
+      .gift-guide-cart-drawer__checkout:disabled {
+        background-color: #ccc !important;
+        cursor: not-allowed !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const overlay = this.cartDrawer.querySelector('.gift-guide-cart-drawer__overlay');
+    overlay.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    `;
+
+    const content = this.cartDrawer.querySelector('.gift-guide-cart-drawer__content');
+    content.style.cssText = `
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 400px;
+      height: 100%;
+      background: white;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    `;
+
+    const header = this.cartDrawer.querySelector('.gift-guide-cart-drawer__header');
+    header.style.cssText = `
+      padding: 20px;
+      border-bottom: 1px solid #e5e5e5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    `;
+
+    const title = this.cartDrawer.querySelector('.gift-guide-cart-drawer__title');
+    title.style.cssText = `
+      margin: 0;
+      font-size: 18px;
+      font-weight: bold;
+    `;
+
+    const closeBtn = this.cartDrawer.querySelector('.gift-guide-cart-drawer__close');
+    closeBtn.style.cssText = `
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+    `;
+
+    const body = this.cartDrawer.querySelector('.gift-guide-cart-drawer__body');
+    body.style.cssText = `
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    `;
+
+    const footer = this.cartDrawer.querySelector('.gift-guide-cart-drawer__footer');
+    footer.style.cssText = `
+      padding: 20px;
+      border-top: 1px solid #e5e5e5;
+      background: #f9f9f9;
+    `;
+
+    const subtotal = this.cartDrawer.querySelector('.gift-guide-cart-drawer__subtotal');
+    subtotal.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-weight: bold;
+    `;
+
+    const checkoutBtn = this.cartDrawer.querySelector('.gift-guide-cart-drawer__checkout');
+    checkoutBtn.style.cssText = `
+      width: 100%;
+      padding: 16px;
+      background: #000;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    `;
+
+    // Add event listeners
+    closeBtn.addEventListener('click', () => this.hideCartDrawer());
+    overlay.addEventListener('click', () => this.hideCartDrawer());
+    checkoutBtn.addEventListener('click', () => this.goToCheckout());
+    
+    // Add keyboard event listener for Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.cartDrawer && this.cartDrawer.classList.contains('active')) {
+        this.hideCartDrawer();
+      }
+    });
+
+    document.body.appendChild(this.cartDrawer);
+  }
+
+  /**
+   * Hides the cart drawer
+   */
+  hideCartDrawer() {
+    if (this.cartDrawer) {
+      this.cartDrawer.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  /**
+   * Loads cart data and updates the drawer
+   */
+  async loadCartData() {
+    try {
+      const response = await fetch('/cart.js');
+      const cart = await response.json();
+      
+      this.updateCartDrawer(cart);
+    } catch (error) {
+      console.error('Error loading cart data:', error);
+    }
+  }
+
+  /**
+   * Updates the cart drawer with cart data
+   */
+  updateCartDrawer(cart) {
+    const itemsContainer = this.cartDrawer.querySelector('.gift-guide-cart-drawer__items');
+    const emptyMessage = this.cartDrawer.querySelector('.gift-guide-cart-drawer__empty');
+    const subtotalAmount = this.cartDrawer.querySelector('.gift-guide-cart-drawer__subtotal-amount');
+    const checkoutBtn = this.cartDrawer.querySelector('.gift-guide-cart-drawer__checkout');
+
+    if (cart.item_count === 0) {
+      itemsContainer.style.display = 'none';
+      emptyMessage.style.display = 'block';
+      checkoutBtn.disabled = true;
+    } else {
+      itemsContainer.style.display = 'block';
+      emptyMessage.style.display = 'none';
+      checkoutBtn.disabled = false;
+
+      // Render cart items
+      itemsContainer.innerHTML = cart.items.map(item => `
+        <div class="gift-guide-cart-drawer__item" style="
+          display: flex;
+          align-items: center;
+          padding: 16px 0;
+          border-bottom: 1px solid #e5e5e5;
+        ">
+          <div class="gift-guide-cart-drawer__item-image" style="
+            width: 60px;
+            height: 60px;
+            margin-right: 16px;
+            flex-shrink: 0;
+          ">
+            <img src="${item.image}" alt="${item.title}" style="
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              border-radius: 4px;
+            ">
+          </div>
+          <div class="gift-guide-cart-drawer__item-details" style="flex: 1;">
+            <h4 class="gift-guide-cart-drawer__item-title" style="
+              margin: 0 0 4px 0;
+              font-size: 14px;
+              font-weight: bold;
+            ">${item.title}</h4>
+            <p class="gift-guide-cart-drawer__item-variant" style="
+              margin: 0 0 8px 0;
+              font-size: 12px;
+              color: #666;
+            ">${item.variant_title || ''}</p>
+            <div class="gift-guide-cart-drawer__item-price" style="
+              font-weight: bold;
+              color: #000;
+            ">${this.formatPrice(item.final_price)}</div>
+          </div>
+          <div class="gift-guide-cart-drawer__item-quantity" style="
+            margin-left: 16px;
+            text-align: center;
+          ">
+            <span style="font-weight: bold;">Qty: ${item.quantity}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Update subtotal
+    subtotalAmount.textContent = this.formatPrice(cart.total_price);
+  }
+
+  /**
+   * Goes to checkout
+   */
+  goToCheckout() {
+    window.location.href = '/cart';
   }
 }
 
