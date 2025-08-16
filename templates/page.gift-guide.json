@@ -27,17 +27,17 @@
         "product_image_4": null,
         "product_image_5": null,
         "product_image_6": null,
-        "hotspot_x_1": 30,
-        "hotspot_y_1": 40,
-        "hotspot_x_2": 70,
-        "hotspot_y_2": 60,
+        "hotspot_x_1": 50,
+        "hotspot_y_1": 50,
+        "hotspot_x_2": 50,
+        "hotspot_y_2": 50,
         "hotspot_x_3": 50,
         "hotspot_y_3": 50,
-        "hotspot_x_4": 40,
-        "hotspot_y_4": 70,
-        "hotspot_x_5": 60,
-        "hotspot_y_5": 30,
-        "hotspot_x_6": 80,
+        "hotspot_x_4": 50,
+        "hotspot_y_4": 50,
+        "hotspot_x_5": 50,
+        "hotspot_y_5": 50,
+        "hotspot_x_6": 50,
         "hotspot_y_6": 50,
         "section_width": "page-width",
         "color_scheme": "scheme-1",
@@ -50,4 +50,4 @@
     "banner",
     "grid"
   ]
-}
+} 

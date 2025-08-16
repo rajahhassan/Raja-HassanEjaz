@@ -1,0 +1,694 @@
+{% liquid
+  assign heading = section.settings.heading | default: 'Tisso vison in the wild'
+  assign products = section.settings.products
+%}
+
+<script
+  src="{{ 'gift-guide-grid.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div
+  class="section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }} gift-guide-grid"
+  style="{% render 'spacing-style', settings: section.settings %}"
+>
+  <gift-guide-grid-component>
+    <div class="gift-guide-grid__container">
+      <h2 class="gift-guide-grid__heading">{{ heading }}</h2>
+      
+            <div class="gift-guide-grid__products" ref="productsGrid">
+        {% liquid
+          # Get real products from the store - use the same method as main collection
+          assign max_products = 6
+          
+          # Check product source setting
+          if section.settings.product_source == 'manual' and products.size > 0
+            assign display_products = products
+          else
+            # Use collections.all.products directly like main collection does
+            assign display_products = collections.all.products
+          endif
+        %}
+        
+        {% for product in display_products limit: max_products %}
+          {% liquid
+            assign image_key = 'product_image_' | append: forloop.index
+            assign image = section.settings[image_key]
+            assign hotspot_x_key = 'hotspot_x_' | append: forloop.index
+            assign hotspot_y_key = 'hotspot_y_' | append: forloop.index
+            assign hotspot_x = section.settings[hotspot_x_key] | default: 50
+            assign hotspot_y = section.settings[hotspot_y_key] | default: 50
+          %}
+          
+          <!-- Real product -->
+          <div class="gift-guide-grid__product-item" data-product-index="{{ forloop.index0 }}" ref="productItem">
+            <div class="gift-guide-grid__product-image-container">
+              
+              {% if image %}
+                <img 
+                  src="{{ image | image_url: width: 400 }}" 
+                  alt="{{ product.title | default: 'Product' }}"
+                  class="gift-guide-grid__product-image"
+                  loading="lazy"
+                >
+              {% elsif product.featured_image %}
+                <img 
+                  src="{{ product.featured_image | image_url: width: 400 }}" 
+                  alt="{{ product.title | default: 'Product' }}"
+                  class="gift-guide-grid__product-image"
+                  loading="lazy"
+                >
+              {% elsif product.featured_media %}
+                <img 
+                  src="{{ product.featured_media.preview_image | image_url: width: 400 }}" 
+                  alt="{{ product.title | default: 'Product' }}"
+                  class="gift-guide-grid__product-image"
+                  loading="lazy"
+                >
+              {% else %}
+                <div class="gift-guide-grid__product-placeholder">
+                  <span>{{ product.title | default: 'Product ' | append: forloop.index }}</span>
+                </div>
+              {% endif %}
+              
+              <!-- Hotspot -->
+              <button 
+                class="gift-guide-grid__hotspot" 
+                style="left: {{ hotspot_x }}%; top: {{ hotspot_y }}%;"
+                data-product-id="{{ product.id | default: '' }}"
+                data-product-handle="{{ product.handle | default: '' }}"
+                ref="hotspot"
+              >
+                <span class="gift-guide-grid__hotspot-icon">+</span>
+                <span class="gift-guide-grid__hotspot-arrow">→</span>
+              </button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Product Popup Modal -->
+    <div class="gift-guide-grid__popup-overlay" ref="popupOverlay">
+      <div class="gift-guide-grid__popup" ref="popup">
+        <button class="gift-guide-grid__popup-close" ref="popupClose">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        
+        <div class="gift-guide-grid__popup-content" ref="popupContent">
+          <!-- Product content will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </gift-guide-grid-component>
+</div>
+
+{% stylesheet %}
+  .gift-guide-grid {
+    background: #ffffff;
+    padding: 80px 0;
+  }
+
+  .gift-guide-grid__container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .gift-guide-grid__heading {
+    font-size: 32px;
+    font-weight: bold;
+    color: #000;
+    margin: 0 0 60px 0;
+    text-align: left;
+  }
+
+  .gift-guide-grid__products {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+
+  .gift-guide-grid__product-item {
+    position: relative;
+  }
+
+  .gift-guide-grid__product-image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  .gift-guide-grid__product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .gift-guide-grid__product-item:hover .gift-guide-grid__product-image {
+    transform: scale(1.05);
+  }
+
+  .gift-guide-grid__product-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .gift-guide-grid__hotspot {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+    z-index: 2;
+  }
+
+  .gift-guide-grid__hotspot:hover {
+    background: #000;
+    color: #fff;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  .gift-guide-grid__hotspot-icon {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .gift-guide-grid__hotspot-arrow {
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ff0000;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  /* Popup Styles */
+  .gift-guide-grid__popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+
+  .gift-guide-grid__popup-overlay.active {
+    display: flex;
+  }
+
+  .gift-guide-grid__popup {
+    background: #ffffff;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .gift-guide-grid__popup-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    z-index: 10;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+  }
+
+  .gift-guide-grid__popup-close:hover {
+    background: #f5f5f5;
+  }
+
+  .gift-guide-grid__popup-content {
+    padding: 40px;
+  }
+
+  .gift-guide-grid__popup-product {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+
+  .gift-guide-grid__popup-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .gift-guide-grid__popup-details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .gift-guide-grid__popup-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+  }
+
+  .gift-guide-grid__popup-price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .gift-guide-grid__popup-description {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .gift-guide-grid__popup-variants {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .gift-guide-grid__popup-variant-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .gift-guide-grid__popup-variant-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .gift-guide-grid__popup-variant-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .gift-guide-grid__popup-variant-option {
+    padding: 8px 16px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+  }
+
+  .gift-guide-grid__popup-variant-option:hover {
+    border-color: #000;
+  }
+
+  .gift-guide-grid__popup-variant-option.selected {
+    border-color: #000;
+    background: #000;
+    color: #fff;
+  }
+
+  .gift-guide-grid__popup-variant-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .gift-guide-grid__popup-add-to-cart {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+  }
+
+  .gift-guide-grid__popup-add-to-cart:hover {
+    background: #333;
+    transform: translateY(-2px);
+  }
+
+  .gift-guide-grid__popup-add-to-cart:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Toast Notifications */
+  .gift-guide-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 300px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+
+  .gift-guide-toast--success {
+    background: #4CAF50;
+    color: white;
+  }
+
+  .gift-guide-toast--error {
+    background: #f44336;
+    color: white;
+  }
+
+  .gift-guide-toast__content {
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .gift-guide-toast__icon {
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  .gift-guide-toast__message {
+    font-size: 14px;
+  }
+
+  /* Mobile Styles */
+  @media (max-width: 768px) {
+    .gift-guide-grid__products {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .gift-guide-grid__heading {
+      font-size: 24px;
+      margin-bottom: 40px;
+    }
+
+    .gift-guide-grid__popup {
+      max-width: 100%;
+      margin: 20px;
+    }
+
+    .gift-guide-grid__popup-content {
+      padding: 30px 20px;
+    }
+
+    .gift-guide-grid__popup-product {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .gift-guide-grid__popup-title {
+      font-size: 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .gift-guide-grid__products {
+      grid-template-columns: 1fr;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Gift Guide Grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section Heading",
+      "default": "Tisso vison in the wild"
+    },
+    {
+      "type": "select",
+      "id": "product_source",
+      "label": "Product Source",
+      "options": [
+        {
+          "value": "manual",
+          "label": "Manual Selection"
+        },
+        {
+          "value": "auto",
+          "label": "Auto (First 6 Products)"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "product_list",
+      "id": "products",
+      "label": "Products",
+      "limit": 6,
+      "info": "Only used when Product Source is set to Manual Selection"
+    },
+    {
+      "type": "header",
+      "content": "Product Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_1",
+      "label": "Product 1 Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_2",
+      "label": "Product 2 Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_3",
+      "label": "Product 3 Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_4",
+      "label": "Product 4 Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_5",
+      "label": "Product 5 Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_6",
+      "label": "Product 6 Image"
+    },
+    {
+      "type": "header",
+      "content": "Hotspot Positions"
+    },
+    {
+      "type": "range",
+      "id": "hotspot_x_1",
+      "label": "Product 1 Hotspot X",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_y_1",
+      "label": "Product 1 Hotspot Y",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_x_2",
+      "label": "Product 2 Hotspot X",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_y_2",
+      "label": "Product 2 Hotspot Y",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_x_3",
+      "label": "Product 3 Hotspot X",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_y_3",
+      "label": "Product 3 Hotspot Y",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_x_4",
+      "label": "Product 4 Hotspot X",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_y_4",
+      "label": "Product 4 Hotspot Y",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_x_5",
+      "label": "Product 5 Hotspot X",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_y_5",
+      "label": "Product 5 Hotspot Y",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_x_6",
+      "label": "Product 6 Hotspot X",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "hotspot_y_6",
+      "label": "Product 6 Hotspot Y",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section Width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "Page Width"
+        },
+        {
+          "value": "full-width",
+          "label": "Full Width"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color Scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top Padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom Padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gift Guide Grid"
+    }
+  ]
+}
+{% endschema %} 
