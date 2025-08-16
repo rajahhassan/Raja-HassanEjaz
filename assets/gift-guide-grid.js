@@ -831,10 +831,18 @@ class GiftGuideGridComponent extends Component {
       .gift-guide-cart-drawer__checkout:hover {
         background-color: #333 !important;
       }
-      .gift-guide-cart-drawer__checkout:disabled {
-        background-color: #ccc !important;
-        cursor: not-allowed !important;
-      }
+             .gift-guide-cart-drawer__checkout:disabled {
+         background-color: #ccc !important;
+         cursor: not-allowed !important;
+       }
+       .gift-guide-cart-drawer__quantity-btn:hover {
+         background-color: #f0f0f0 !important;
+       }
+       .gift-guide-cart-drawer__remove-btn:hover {
+         color: #d32f2f !important;
+         background-color: #ffebee !important;
+         transform: scale(1.1) !important;
+       }
     `;
     document.head.appendChild(style);
 
@@ -984,63 +992,258 @@ class GiftGuideGridComponent extends Component {
       emptyMessage.style.display = 'none';
       checkoutBtn.disabled = false;
 
-      // Render cart items
-      itemsContainer.innerHTML = cart.items.map(item => `
-        <div class="gift-guide-cart-drawer__item" style="
-          display: flex;
-          align-items: center;
-          padding: 16px 0;
-          border-bottom: 1px solid #e5e5e5;
-        ">
-          <div class="gift-guide-cart-drawer__item-image" style="
-            width: 60px;
-            height: 60px;
-            margin-right: 16px;
-            flex-shrink: 0;
-          ">
-            <img src="${item.image}" alt="${item.title}" style="
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-              border-radius: 4px;
-            ">
-          </div>
-          <div class="gift-guide-cart-drawer__item-details" style="flex: 1;">
-            <h4 class="gift-guide-cart-drawer__item-title" style="
-              margin: 0 0 4px 0;
-              font-size: 14px;
-              font-weight: bold;
-            ">${item.title}</h4>
-            <p class="gift-guide-cart-drawer__item-variant" style="
-              margin: 0 0 8px 0;
-              font-size: 12px;
-              color: #666;
-            ">${item.variant_title || ''}</p>
-            <div class="gift-guide-cart-drawer__item-price" style="
-              font-weight: bold;
-              color: #000;
-            ">${this.formatPrice(item.final_price)}</div>
-          </div>
-          <div class="gift-guide-cart-drawer__item-quantity" style="
-            margin-left: 16px;
-            text-align: center;
-          ">
-            <span style="font-weight: bold;">Qty: ${item.quantity}</span>
-          </div>
-        </div>
-      `).join('');
+             // Render cart items
+       itemsContainer.innerHTML = cart.items.map(item => `
+         <div class="gift-guide-cart-drawer__item" style="
+           display: flex;
+           align-items: center;
+           padding: 16px 0;
+           border-bottom: 1px solid #e5e5e5;
+         " data-item-key="${item.key}">
+           <div class="gift-guide-cart-drawer__item-image" style="
+             width: 60px;
+             height: 60px;
+             margin-right: 16px;
+             flex-shrink: 0;
+           ">
+             <img src="${item.image}" alt="${item.title}" style="
+               width: 100%;
+               height: 100%;
+               object-fit: cover;
+               border-radius: 4px;
+             ">
+           </div>
+           <div class="gift-guide-cart-drawer__item-details" style="flex: 1;">
+             <h4 class="gift-guide-cart-drawer__item-title" style="
+               margin: 0 0 4px 0;
+               font-size: 14px;
+               font-weight: bold;
+             ">${item.title}</h4>
+             <p class="gift-guide-cart-drawer__item-variant" style="
+               margin: 0 0 8px 0;
+               font-size: 12px;
+               color: #666;
+             ">${item.variant_title || ''}</p>
+             <div class="gift-guide-cart-drawer__item-price" style="
+               font-weight: bold;
+               color: #000;
+             ">${this.formatPrice(item.final_price)}</div>
+           </div>
+           <div class="gift-guide-cart-drawer__item-controls" style="
+             margin-left: 16px;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             gap: 8px;
+           ">
+             <div class="gift-guide-cart-drawer__quantity-controls" style="
+               display: flex;
+               align-items: center;
+               gap: 8px;
+               border: 1px solid #ddd;
+               border-radius: 4px;
+               padding: 4px;
+             ">
+               <button class="gift-guide-cart-drawer__quantity-btn" data-action="decrease" data-item-key="${item.key}" style="
+                 background: none;
+                 border: none;
+                 cursor: pointer;
+                 padding: 4px 8px;
+                 font-size: 16px;
+                 font-weight: bold;
+                 color: #666;
+                 border-radius: 2px;
+                 transition: background-color 0.2s ease;
+               ">-</button>
+               <span class="gift-guide-cart-drawer__quantity-display" style="
+                 font-weight: bold;
+                 min-width: 20px;
+                 text-align: center;
+               ">${item.quantity}</span>
+               <button class="gift-guide-cart-drawer__quantity-btn" data-action="increase" data-item-key="${item.key}" style="
+                 background: none;
+                 border: none;
+                 cursor: pointer;
+                 padding: 4px 8px;
+                 font-size: 16px;
+                 font-weight: bold;
+                 color: #666;
+                 border-radius: 2px;
+                 transition: background-color 0.2s ease;
+               ">+</button>
+             </div>
+                           <button class="gift-guide-cart-drawer__remove-btn" data-item-key="${item.key}" style="
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 8px;
+                color: #f44336;
+                border-radius: 4px;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              " aria-label="Remove item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>
+                </svg>
+              </button>
+           </div>
+         </div>
+       `).join('');
+
+       // Add event listeners for quantity controls and remove buttons
+       this.setupCartItemEventListeners();
     }
 
     // Update subtotal
     subtotalAmount.textContent = this.formatPrice(cart.total_price);
   }
 
-  /**
-   * Goes to checkout
-   */
-  goToCheckout() {
-    window.location.href = '/cart';
-  }
+     /**
+    * Sets up event listeners for cart item controls
+    */
+   setupCartItemEventListeners() {
+     // Quantity buttons
+     const quantityBtns = this.cartDrawer.querySelectorAll('.gift-guide-cart-drawer__quantity-btn');
+     quantityBtns.forEach(btn => {
+       btn.addEventListener('click', (e) => {
+         e.preventDefault();
+         const action = btn.dataset.action;
+         const itemKey = btn.dataset.itemKey;
+         this.handleQuantityChange(itemKey, action);
+       });
+     });
+
+     // Remove buttons
+     const removeBtns = this.cartDrawer.querySelectorAll('.gift-guide-cart-drawer__remove-btn');
+     removeBtns.forEach(btn => {
+       btn.addEventListener('click', (e) => {
+         e.preventDefault();
+         const itemKey = btn.dataset.itemKey;
+         this.handleRemoveItem(itemKey);
+       });
+     });
+   }
+
+   /**
+    * Handles quantity change for cart items
+    */
+   async handleQuantityChange(itemKey, action) {
+     try {
+       // Get current cart to find the item
+       const response = await fetch('/cart.js');
+       const cart = await response.json();
+       
+       const item = cart.items.find(item => item.key === itemKey);
+       if (!item) return;
+
+       let newQuantity = item.quantity;
+       
+       if (action === 'increase') {
+         newQuantity += 1;
+       } else if (action === 'decrease') {
+         newQuantity = Math.max(0, newQuantity - 1);
+       }
+
+       if (newQuantity === 0) {
+         // Remove item if quantity becomes 0
+         await this.removeItemFromCart(itemKey);
+       } else {
+         // Update quantity
+         await this.updateCartItemQuantity(itemKey, newQuantity);
+       }
+
+       // Reload cart data and update drawer
+       await this.loadCartData();
+       
+       // Update cart count in header
+       this.updateCartCount();
+       this.triggerCartUpdate();
+       
+     } catch (error) {
+       console.error('Error updating quantity:', error);
+       this.showErrorMessage('Failed to update quantity');
+     }
+   }
+
+   /**
+    * Handles removing item from cart
+    */
+   async handleRemoveItem(itemKey) {
+     try {
+       await this.removeItemFromCart(itemKey);
+       
+       // Reload cart data and update drawer
+       await this.loadCartData();
+       
+       // Update cart count in header
+       this.updateCartCount();
+       this.triggerCartUpdate();
+       
+       this.showSuccessMessage('Item removed from cart');
+     } catch (error) {
+       console.error('Error removing item:', error);
+       this.showErrorMessage('Failed to remove item');
+     }
+   }
+
+   /**
+    * Updates cart item quantity using Shopify API
+    */
+   async updateCartItemQuantity(itemKey, quantity) {
+     const formData = {
+       id: itemKey,
+       quantity: quantity
+     };
+
+     const response = await fetch('/cart/change.js', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+         'X-Requested-With': 'XMLHttpRequest'
+       },
+       body: JSON.stringify(formData)
+     });
+
+     if (!response.ok) {
+       throw new Error(`Failed to update quantity: ${response.status}`);
+     }
+
+     return await response.json();
+   }
+
+   /**
+    * Removes item from cart using Shopify API
+    */
+   async removeItemFromCart(itemKey) {
+     const formData = {
+       id: itemKey,
+       quantity: 0
+     };
+
+     const response = await fetch('/cart/change.js', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+         'X-Requested-With': 'XMLHttpRequest'
+       },
+       body: JSON.stringify(formData)
+     });
+
+     if (!response.ok) {
+       throw new Error(`Failed to remove item: ${response.status}`);
+     }
+
+     return await response.json();
+   }
+
+   /**
+    * Goes to checkout
+    */
+   goToCheckout() {
+     window.location.href = '/cart';
+   }
 }
 
 // Register the custom element
