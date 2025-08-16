@@ -1,0 +1,382 @@
+{% liquid
+  assign logo_text = section.settings.logo_text | default: 'TISSO VISON'
+  assign tagline = section.settings.tagline | default: 'Find the ideal gift for your loved ones.'
+  assign heading = section.settings.heading | default: 'The Gift Guide'
+  assign description = section.settings.description | default: 'Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.'
+  assign shop_now_text = section.settings.shop_now_text | default: 'SHOP NOW'
+  assign choose_gift_text = section.settings.choose_gift_text | default: 'CHOOSE GIFT'
+  assign footer_text = section.settings.footer_text | default: 'SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL'
+%}
+
+<script
+  src="{{ 'gift-guide-banner.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div
+  class="section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }} gift-guide-banner"
+  style="{% render 'spacing-style', settings: section.settings %}"
+>
+  <gift-guide-banner-component>
+         <div class="gift-guide-banner__container">
+       <!-- Header -->
+       <header class="gift-guide-banner__header">
+         <div class="gift-guide-banner__logo">
+           {{ logo_text }}
+         </div>
+         <div class="gift-guide-banner__tagline">
+           {{ tagline }}
+         </div>
+         <button class="gift-guide-banner__choose-gift-btn" ref="chooseGiftBtn">
+           {{ choose_gift_text }}
+           <svg class="gift-guide-banner__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+             <path d="M8 1L15 8L8 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+           </svg>
+         </button>
+       </header>
+
+       <!-- Main Banner Content -->
+       <div class="gift-guide-banner__content">
+         <!-- Top Image -->
+         <div class="gift-guide-banner__top-section">
+           <img 
+             src="{{ 'topBanner.png' | asset_url }}" 
+             alt="Top Banner with travel items"
+             class="gift-guide-banner__top-image"
+             loading="lazy"
+           >
+         </div>
+         
+         <!-- Bottom Section: Text and Right Image -->
+         <div class="gift-guide-banner__bottom-section">
+           <div class="gift-guide-banner__text-content">
+             <h1 class="gift-guide-banner__heading">{{ heading }}</h1>
+             <p class="gift-guide-banner__description">{{ description }}</p>
+             <button class="gift-guide-banner__shop-now-btn" ref="shopNowBtn">
+               {{ shop_now_text }}
+               <svg class="gift-guide-banner__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                 <path d="M8 1L15 8L8 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+             </button>
+           </div>
+
+           <div class="gift-guide-banner__right-section">
+             <img 
+               src="{{ 'rightBanner.png' | asset_url }}" 
+               alt="Right Banner with accessories"
+               class="gift-guide-banner__right-image"
+               loading="lazy"
+             >
+           </div>
+         </div>
+               </div>
+
+     </div>
+       <!-- Footer -->
+       <footer class="gift-guide-banner__footer">
+         {{ footer_text }}
+       </footer>
+  </gift-guide-banner-component>
+</div>
+
+{% stylesheet %}
+  .gift-guide-banner {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+  }
+
+  .gift-guide-banner__container {
+    width: 100%;
+    padding: 0 20px;
+  }
+
+  .gift-guide-banner__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+  }
+
+  .gift-guide-banner__logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .gift-guide-banner__tagline {
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+  }
+
+  .gift-guide-banner__choose-gift-btn {
+    background: #ffd700;
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    transform: translateX(0);
+  }
+
+  .gift-guide-banner__choose-gift-btn:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  }
+
+
+
+  .gift-guide-banner__content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gift-guide-banner__top-section {
+    width: 100%;
+  }
+
+  .gift-guide-banner__top-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .gift-guide-banner__bottom-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    width: 100%;
+    padding:0px 0px 0px 40px
+  }
+
+  .gift-guide-banner__right-section {
+    width: 100%;
+  }
+
+  .gift-guide-banner__right-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .gift-guide-banner__text-content {
+    padding:20px
+    display: flex;
+    flex-direction: column;
+    gap:30px;
+  }
+
+  .gift-guide-banner__heading {
+    font-size: 48px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+    line-height: 1.2;    
+  }
+
+  .gift-guide-banner__description {
+    font-size: 18px;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .gift-guide-banner__shop-now-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    transform: translateX(0);
+    align-self: flex-start;
+  }
+
+  .gift-guide-banner__shop-now-btn:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .gift-guide-banner__arrow {
+    transition: transform 0.3s ease;
+  }
+
+  .gift-guide-banner__shop-now-btn:hover .gift-guide-banner__arrow,
+  .gift-guide-banner__choose-gift-btn:hover .gift-guide-banner__arrow {
+    transform: translateX(3px);
+  }
+
+  .gift-guide-banner__footer {
+    background-color:#edf0f0;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    padding: 5px ;
+  }
+
+  @media (max-width: 768px) {
+    .gift-guide-banner__header {
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .gift-guide-banner__content {
+      gap: 20px;
+    }
+
+    .gift-guide-banner__top-section {
+      height: 150px;
+    }
+
+    .gift-guide-banner__bottom-section {
+      grid-template-columns: 1fr;
+    }
+
+    .gift-guide-banner__right-section {
+      height: 250px;
+    }
+
+    .gift-guide-banner__heading {
+      font-size: 36px;
+    }
+
+    .gift-guide-banner__description {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .gift-guide-banner__top-section {
+      height: 120px;
+    }
+
+    .gift-guide-banner__right-section {
+      height: 200px;
+    }
+
+  
+
+    .gift-guide-banner__heading {
+      font-size: 28px;
+    }
+
+    .gift-guide-banner__description {
+      font-size: 14px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Gift Guide Banner",
+  "settings": [
+    {
+      "type": "text",
+      "id": "logo_text",
+      "label": "Logo Text",
+      "default": "TISSO VISON"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline",
+      "default": "Find the ideal gift for your loved ones."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Main Heading",
+      "default": "The Gift Guide"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season."
+    },
+    {
+      "type": "text",
+      "id": "shop_now_text",
+      "label": "Shop Now Button Text",
+      "default": "SHOP NOW"
+    },
+         {
+       "type": "text",
+       "id": "choose_gift_text",
+       "label": "Choose Gift Button Text",
+       "default": "CHOOSE GIFT"
+     },
+     {
+       "type": "text",
+       "id": "footer_text",
+       "label": "Footer Text",
+       "default": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+     },
+     {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section Width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "Page Width"
+        },
+        {
+          "value": "full-width",
+          "label": "Full Width"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color Scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top Padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom Padding",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gift Guide Banner"
+    }
+  ]
+}
+{% endschema %} 
