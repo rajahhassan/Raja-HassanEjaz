@@ -156,6 +156,8 @@ class GiftGuideGridComponent extends Component {
     const product = this.currentProduct;
     const selectedVariant = this.getSelectedVariant();
     const productImage = this.getProductImage(product, selectedVariant);
+    
+    
 
     const popupHTML = `
       <div class="gift-guide-grid__popup-product">
@@ -169,26 +171,94 @@ class GiftGuideGridComponent extends Component {
         </div>
         
         <div class="gift-guide-grid__popup-details">
-          <h3 class="gift-guide-grid__popup-title">${product.title}</h3>
-          <div class="gift-guide-grid__popup-price">
-            ${this.formatPrice(selectedVariant?.price || product.price)}
-          </div>
-          
-          ${product.body_html ? `
-            <div class="gift-guide-grid__popup-description">
-              ${this.stripHtml(product.body_html)}
+                     <h3 class="gift-guide-grid__popup-title">${product.title}</h3>
+                      <div class="gift-guide-grid__popup-price" style="margin-bottom: 4px;">
+              ${this.formatPrice(selectedVariant?.price || product.price)}
             </div>
-          ` : ''}
+            
+                       ${product.body_html ? `
+               <div class="gift-guide-grid__popup-description" style="
+                 margin: 2px 0 6px 0;
+                 padding: 6px;
+                 background: #f9f9f9;
+                 border-radius: 3px;
+                 font-size: 11px;
+                 line-height: 1.2;
+                 color: #333;
+               ">
+                 <strong style="display: block; margin-bottom: 2px; color: #000; font-size: 10px;">Description:</strong>
+                 <div class="gift-guide-grid__popup-description-content" style="
+                   max-height: 32px;
+                   overflow: hidden;
+                   position: relative;
+                 ">
+                   ${this.stripHtml(product.body_html)}
+                 </div>
+                 <button class="gift-guide-grid__popup-description-toggle" style="
+                   background: none;
+                   border: none;
+                   color: #007bff;
+                   cursor: pointer;
+                   font-size: 9px;
+                   text-decoration: underline;
+                   margin-top: 2px;
+                   padding: 0;
+                 ">See more</button>
+               </div>
+             ` : product.description ? `
+               <div class="gift-guide-grid__popup-description" style="
+                 margin: 2px 0 6px 0;
+                 padding: 6px;
+                 background: #f9f9f9;
+                 border-radius: 3px;
+                 font-size: 11px;
+                 line-height: 1.2;
+                 color: #333;
+               ">
+                 <strong style="display: block; margin-bottom: 2px; color: #000; font-size: 10px;">Description:</strong>
+                 <div class="gift-guide-grid__popup-description-content" style="
+                   max-height: 32px;
+                   overflow: hidden;
+                   position: relative;
+                 ">
+                   ${product.description}
+                 </div>
+                 <button class="gift-guide-grid__popup-description-toggle" style="
+                   background: none;
+                   border: none;
+                   color: #007bff;
+                   cursor: pointer;
+                   font-size: 9px;
+                   text-decoration: underline;
+                   margin-top: 2px;
+                   padding: 0;
+                 ">See more</button>
+               </div>
+             ` : ''}
           
           ${this.renderVariantOptions()}
           
-          <button 
-            class="gift-guide-grid__popup-add-to-cart" 
-            ${!selectedVariant?.available ? 'disabled' : ''}
-            data-variant-id="${selectedVariant?.id || ''}"
-          >
-            ${selectedVariant?.available ? 'ADD TO CART' : 'OUT OF STOCK'}
-          </button>
+                     <button 
+             class="gift-guide-grid__popup-add-to-cart" 
+             ${!selectedVariant?.available ? 'disabled' : ''}
+             data-variant-id="${selectedVariant?.id || ''}"
+             style="
+               width: 100%;
+               padding: 10px 14px;
+               background: #000;
+               color: white;
+               border: none;
+               border-radius: 4px;
+               font-size: 13px;
+               font-weight: bold;
+               cursor: pointer;
+               transition: background-color 0.2s ease;
+               margin-top: 6px;
+               ${!selectedVariant?.available ? 'background: #ccc; cursor: not-allowed;' : ''}
+             "
+           >
+             ${selectedVariant?.available ? 'ADD TO CART' : 'OUT OF STOCK'}
+           </button>
         </div>
       </div>
     `;
@@ -259,129 +329,275 @@ class GiftGuideGridComponent extends Component {
     return '';
   }
 
-  /**
-   * Renders variant options using the new Shopify options_with_values structure
-   */
-  renderVariantOptionsWithValues() {
-    const options = this.currentProduct.options_with_values;
-    const variants = this.currentProduct.variants;
+     /**
+    * Renders variant options using the new Shopify options_with_values structure
+    */
+   renderVariantOptionsWithValues() {
+     const options = this.currentProduct.options_with_values;
+     const variants = this.currentProduct.variants;
 
-    return `
-      <div class="gift-guide-grid__popup-variants">
-        ${options.map((option, index) => {
-          const optionName = option.name;
-          
-          return `
-            <div class="gift-guide-grid__popup-variant-group">
-              <label class="gift-guide-grid__popup-variant-label">${optionName}</label>
-              <div class="gift-guide-grid__popup-variant-options">
-                ${option.values.map(optionValue => {
-                  const value = optionValue.name || optionValue;
-                  const isSelected = this.selectedVariants[optionName] === value;
-                  const isAvailable = optionValue.available !== false;
-                  
-                  return `
-                    <button 
-                      class="gift-guide-grid__popup-variant-option ${isSelected ? 'selected' : ''} ${!isAvailable ? 'disabled' : ''}"
-                      data-option="${optionName}"
-                      data-value="${value}"
-                      ${!isAvailable ? 'disabled' : ''}
-                    >
-                      ${value}
-                    </button>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
+           return `
+                 <div class="gift-guide-grid__popup-variants" style="margin-bottom: 8px;">
+           ${options.map((option, index) => {
+             const optionName = option.name;
+             const isSizeOption = optionName.toLowerCase().includes('size');
+             
+             if (isSizeOption) {
+               // Render size as dropdown
+               return `
+                 <div class="gift-guide-grid__popup-variant-group" style="margin-bottom: 6px;">
+                   <label class="gift-guide-grid__popup-variant-label" style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">${optionName}</label>
+                   <select class="gift-guide-grid__popup-variant-dropdown" data-option="${optionName}" style="
+                     width: 100%;
+                     padding: 6px 8px;
+                     border: 1px solid #ddd;
+                     border-radius: 4px;
+                     font-size: 12px;
+                     background: white;
+                     cursor: pointer;
+                     transition: border-color 0.2s ease;
+                   ">
+                    <option value="">Select ${optionName}</option>
+                    ${option.values.map(optionValue => {
+                      const value = optionValue.name || optionValue;
+                      const isSelected = this.selectedVariants[optionName] === value;
+                      const isAvailable = optionValue.available !== false;
+                      
+                      return `
+                        <option 
+                          value="${value}"
+                          ${isSelected ? 'selected' : ''}
+                          ${!isAvailable ? 'disabled' : ''}
+                        >
+                          ${value}${!isAvailable ? ' (Out of Stock)' : ''}
+                        </option>
+                      `;
+                    }).join('')}
+                  </select>
+                </div>
+              `;
+                         } else {
+               // Render other options as buttons
+               return `
+                 <div class="gift-guide-grid__popup-variant-group" style="margin-bottom: 6px;">
+                   <label class="gift-guide-grid__popup-variant-label" style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">${optionName}</label>
+                   <div class="gift-guide-grid__popup-variant-options" style="display: flex; gap: 4px; flex-wrap: wrap;">
+                     ${option.values.map(optionValue => {
+                       const value = optionValue.name || optionValue;
+                       const isSelected = this.selectedVariants[optionName] === value;
+                       const isAvailable = optionValue.available !== false;
+                       
+                       return `
+                         <button 
+                           class="gift-guide-grid__popup-variant-option ${isSelected ? 'selected' : ''} ${!isAvailable ? 'disabled' : ''}"
+                           data-option="${optionName}"
+                           data-value="${value}"
+                           style="
+                             padding: 4px 8px;
+                             border: 1px solid #ddd;
+                             border-radius: 3px;
+                             background: white;
+                             font-size: 11px;
+                             cursor: pointer;
+                             transition: all 0.2s ease;
+                             ${isSelected ? 'background: #000; color: white; border-color: #000;' : ''}
+                             ${!isAvailable ? 'opacity: 0.5; cursor: not-allowed;' : ''}
+                           "
+                           ${!isAvailable ? 'disabled' : ''}
+                         >
+                           ${value}
+                         </button>
+                       `;
+                     }).join('')}
+                   </div>
+                 </div>
+               `;
+             }
+          }).join('')}
+        </div>
+      `;
+   }
 
-  /**
-   * Renders variant options using the legacy structure
-   */
-  renderVariantOptionsLegacy() {
-    const options = this.currentProduct.options;
-    const variants = this.currentProduct.variants;
+     /**
+    * Renders variant options using the legacy structure
+    */
+   renderVariantOptionsLegacy() {
+     const options = this.currentProduct.options;
+     const variants = this.currentProduct.variants;
 
-    return `
-      <div class="gift-guide-grid__popup-variants">
-        ${options.map((option, index) => {
-          const optionName = option.name;
-          const optionValues = [...new Set(variants.map(v => v[`option${index + 1}`]).filter(Boolean))];
-          
-          return `
-            <div class="gift-guide-grid__popup-variant-group">
-              <label class="gift-guide-grid__popup-variant-label">${optionName}</label>
-              <div class="gift-guide-grid__popup-variant-options">
-                ${optionValues.map(value => {
-                  const isSelected = this.selectedVariants[optionName] === value;
-                  const isAvailable = this.isVariantAvailable(optionName, value);
-                  
-                  return `
-                    <button 
-                      class="gift-guide-grid__popup-variant-option ${isSelected ? 'selected' : ''} ${!isAvailable ? 'disabled' : ''}"
-                      data-option="${optionName}"
-                      data-value="${value}"
-                      ${!isAvailable ? 'disabled' : ''}
-                    >
-                      ${value}
-                    </button>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
+           return `
+                 <div class="gift-guide-grid__popup-variants" style="margin-bottom: 8px;">
+           ${options.map((option, index) => {
+             const optionName = option.name;
+             const optionValues = [...new Set(variants.map(v => v[`option${index + 1}`]).filter(Boolean))];
+             const isSizeOption = optionName.toLowerCase().includes('size');
+             
+             if (isSizeOption) {
+               // Render size as dropdown
+               return `
+                 <div class="gift-guide-grid__popup-variant-group" style="margin-bottom: 6px;">
+                   <label class="gift-guide-grid__popup-variant-label" style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">${optionName}</label>
+                   <select class="gift-guide-grid__popup-variant-dropdown" data-option="${optionName}" style="
+                     width: 100%;
+                     padding: 6px 8px;
+                     border: 1px solid #ddd;
+                     border-radius: 4px;
+                     font-size: 12px;
+                     background: white;
+                     cursor: pointer;
+                     transition: border-color 0.2s ease;
+                   ">
+                    <option value="">Select ${optionName}</option>
+                    ${optionValues.map(value => {
+                      const isSelected = this.selectedVariants[optionName] === value;
+                      const isAvailable = this.isVariantAvailable(optionName, value);
+                      
+                      return `
+                        <option 
+                          value="${value}"
+                          ${isSelected ? 'selected' : ''}
+                          ${!isAvailable ? 'disabled' : ''}
+                        >
+                          ${value}${!isAvailable ? ' (Out of Stock)' : ''}
+                        </option>
+                      `;
+                    }).join('')}
+                  </select>
+                </div>
+              `;
+                         } else {
+               // Render other options as buttons
+               return `
+                 <div class="gift-guide-grid__popup-variant-group" style="margin-bottom: 6px;">
+                   <label class="gift-guide-grid__popup-variant-label" style="display: block; margin-bottom: 3px; font-size: 12px; font-weight: bold;">${optionName}</label>
+                   <div class="gift-guide-grid__popup-variant-options" style="display: flex; gap: 4px; flex-wrap: wrap;">
+                     ${optionValues.map(value => {
+                       const isSelected = this.selectedVariants[optionName] === value;
+                       const isAvailable = this.isVariantAvailable(optionName, value);
+                       
+                       return `
+                         <button 
+                           class="gift-guide-grid__popup-variant-option ${isSelected ? 'selected' : ''} ${!isAvailable ? 'disabled' : ''}"
+                           data-option="${optionName}"
+                           data-value="${value}"
+                           style="
+                             padding: 4px 8px;
+                             border: 1px solid #ddd;
+                             border-radius: 3px;
+                             background: white;
+                             font-size: 11px;
+                             cursor: pointer;
+                             transition: all 0.2s ease;
+                             ${isSelected ? 'background: #000; color: white; border-color: #000;' : ''}
+                             ${!isAvailable ? 'opacity: 0.5; cursor: not-allowed;' : ''}
+                           "
+                           ${!isAvailable ? 'disabled' : ''}
+                         >
+                           ${value}
+                         </button>
+                       `;
+                     }).join('')}
+                   </div>
+                 </div>
+               `;
+             }
+          }).join('')}
+        </div>
+      `;
+   }
 
-  /**
-   * Sets up event listeners for popup interactions
-   */
-  setupPopupEventListeners() {
-    // Variant option click handlers
-    const variantOptions = this.querySelectorAll('.gift-guide-grid__popup-variant-option:not(.disabled)');
-    variantOptions.forEach(option => {
-      option.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.handleVariantSelection(option);
+     /**
+    * Sets up event listeners for popup interactions
+    */
+   setupPopupEventListeners() {
+     // Variant option click handlers (for buttons)
+     const variantOptions = this.querySelectorAll('.gift-guide-grid__popup-variant-option:not(.disabled)');
+     variantOptions.forEach(option => {
+       option.addEventListener('click', (e) => {
+         e.preventDefault();
+         this.handleVariantSelection(option);
+       });
+     });
+
+     // Variant dropdown change handlers (for size dropdowns)
+     const variantDropdowns = this.querySelectorAll('.gift-guide-grid__popup-variant-dropdown');
+     variantDropdowns.forEach(dropdown => {
+       dropdown.addEventListener('change', (e) => {
+         this.handleVariantDropdownChange(dropdown);
+       });
+     });
+
+           // Add to cart button handler
+      const addToCartBtn = this.querySelector('.gift-guide-grid__popup-add-to-cart');
+      if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.handleAddToCart();
+        });
+      }
+
+      // Description toggle button handlers
+      const descriptionToggles = this.querySelectorAll('.gift-guide-grid__popup-description-toggle');
+      descriptionToggles.forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.handleDescriptionToggle(toggle);
+        });
       });
-    });
+   }
 
-    // Add to cart button handler
-    const addToCartBtn = this.querySelector('.gift-guide-grid__popup-add-to-cart');
-    if (addToCartBtn) {
-      addToCartBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.handleAddToCart();
-      });
+     /**
+    * Handles variant selection in the popup
+    */
+   handleVariantSelection(optionElement) {
+     const optionName = optionElement.dataset.option;
+     const optionValue = optionElement.dataset.value;
+
+     // Update selected variants
+     this.selectedVariants[optionName] = optionValue;
+
+     // Update UI
+     const optionGroup = optionElement.closest('.gift-guide-grid__popup-variant-group');
+     optionGroup.querySelectorAll('.gift-guide-grid__popup-variant-option').forEach(opt => {
+       opt.classList.remove('selected');
+     });
+     optionElement.classList.add('selected');
+
+     // Re-render popup to update price, image, and availability
+     this.renderProductPopup();
+   }
+
+       /**
+     * Handles variant dropdown change in the popup
+     */
+    handleVariantDropdownChange(dropdownElement) {
+      const optionName = dropdownElement.dataset.option;
+      const optionValue = dropdownElement.value;
+
+      // Update selected variants
+      this.selectedVariants[optionName] = optionValue;
+
+      // Re-render popup to update price, image, and availability
+      this.renderProductPopup();
     }
-  }
 
-  /**
-   * Handles variant selection in the popup
-   */
-  handleVariantSelection(optionElement) {
-    const optionName = optionElement.dataset.option;
-    const optionValue = optionElement.dataset.value;
-
-    // Update selected variants
-    this.selectedVariants[optionName] = optionValue;
-
-    // Update UI
-    const optionGroup = optionElement.closest('.gift-guide-grid__popup-variant-group');
-    optionGroup.querySelectorAll('.gift-guide-grid__popup-variant-option').forEach(opt => {
-      opt.classList.remove('selected');
-    });
-    optionElement.classList.add('selected');
-
-    // Re-render popup to update price, image, and availability
-    this.renderProductPopup();
-  }
+         /**
+      * Handles description toggle in the popup
+      */
+     handleDescriptionToggle(toggleButton) {
+       const descriptionContainer = toggleButton.closest('.gift-guide-grid__popup-description');
+       const contentDiv = descriptionContainer.querySelector('.gift-guide-grid__popup-description-content');
+       
+       if (contentDiv.style.maxHeight === '40px' || contentDiv.style.maxHeight === '') {
+         // Expand the description
+         contentDiv.style.maxHeight = 'none';
+         toggleButton.textContent = 'See less';
+       } else {
+         // Collapse the description
+         contentDiv.style.maxHeight = '40px';
+         toggleButton.textContent = 'See more';
+       }
+     }
 
   /**
    * Gets the currently selected variant
